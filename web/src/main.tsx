@@ -1,13 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VisibilityProvider } from './providers/VisibilityProvider';
 import App from './components/App';
 import './index.css';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import 'overlayscrollbars/overlayscrollbars.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <VisibilityProvider>
+    <Provider store={store}>
       <App />
-    </VisibilityProvider>
-  </React.StrictMode>,
+      <ToastContainer
+        pauseOnFocusLoss={false}
+        autoClose={3000}
+        pauseOnHover={false}
+        theme='dark'
+        position='bottom-center'
+      />
+    </Provider>
+  </React.StrictMode>
 );

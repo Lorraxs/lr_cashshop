@@ -1,66 +1,149 @@
-import React, { useState } from "react";
-import "./App.css";
-import { debugData } from "../utils/debugData";
-import { fetchNui } from "../utils/fetchNui";
+import { Box, Image as ImageComponent, useShow } from 'lr-components';
+import React, { useEffect } from 'react';
+import { isEnvBrowser } from '../utils/misc';
+import User from './User';
+import Items from './Items';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
+import ConfirmPaidDialog from './ConfirmPaidDialog';
+import DonateDialog from './DonateDialog';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fetchNui } from '../utils/fetchNui';
+import { useNuiEvent } from '../hooks/useNuiEvent';
+import { Category, Item, User as UserType } from '../types';
+import {
+  clearSelectedItem,
+  clearSelectedOptions,
+  setCategories,
+  setDonateData,
+  setItems,
+  setShowConfirmModal,
+  setShowDonateModal,
+} from '../store/items';
+import { BankAccount } from '../types/redux.type';
+import { setUser } from '../store/user';
 
-// This will set the NUI to visible if we are
-// developing in browser
-debugData([
-  {
-    action: "setVisible",
-    data: true,
-  },
-]);
+const MotionImage = motion(ImageComponent);
+const MotionUser = motion(User);
+const MotionItems = motion(Items);
+const MotionConfirmPaidDialog = motion(ConfirmPaidDialog);
+const MotionDonateDialog = motion(DonateDialog);
 
-interface ReturnClientDataCompProps {
-  data: unknown;
-}
+function App() {
+  const { show, toggle } = useShow({ name: 'App' });
+  const items = useSelector((state: RootState) => state.items.items);
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    const images = ['./images/bg.png'];
+    /* items.forEach((item) => {
+      if (item.image) images.push(item.image);
+    }); */
+    images.forEach((image) => {
+      const loadImage = new Image();
+      loadImage.src = image;
+    });
+    fetchNui('setAppReady', true);
+  }, [items]);
 
-const ReturnClientDataComp: React.FC<ReturnClientDataCompProps> = ({
-  data,
-}) => (
-  <>
-    <h5>Returned Data:</h5>
-    <pre>
-      <code>{JSON.stringify(data, null)}</code>
-    </pre>
-  </>
-);
-
-interface ReturnData {
-  x: number;
-  y: number;
-  z: number;
-}
-
-const App: React.FC = () => {
-  const [clientData, setClientData] = useState<ReturnData | null>(null);
-
-  const handleGetClientData = () => {
-    fetchNui<ReturnData>("getClientData")
-      .then((retData) => {
-        console.log("Got return data from client scripts:");
-        console.dir(retData);
-        setClientData(retData);
-      })
-      .catch((e) => {
-        console.error("Setting mock data due to error", e);
-        setClientData({ x: 500, y: 300, z: 200 });
-      });
-  };
+  useEffect(() => {
+    if (isEnvBrowser() && !show) {
+      setTimeout(() => {
+        toggle();
+      }, 1000);
+    }
+    if (!show) {
+      dispatch(setShowConfirmModal(false));
+      dispatch(setShowDonateModal(false));
+      dispatch(clearSelectedOptions());
+      dispatch(clearSelectedItem());
+    }
+  }, [show, toggle, dispatch]);
+  const showConfirmModal = useSelector(
+    (state: RootState) => state.items.showConfirmModal
+  );
+  const showDonateDialog = useSelector(
+    (state: RootState) => state.items.showDonateModal
+  );
+  useNuiEvent<Category[]>('setCategories', (categories) => {
+    dispatch(setCategories(categories));
+  });
+  useNuiEvent<Item[]>('setItems', (items) => {
+    dispatch(setItems(items));
+  });
+  useNuiEvent<BankAccount[]>('setBankAccounts', (bankAccounts) => {
+    dispatch(setDonateData(bankAccounts));
+  });
+  useNuiEvent<UserType>('setUser', (user) => {
+    dispatch(setUser(user));
+  });
 
   return (
-    <div className="nui-wrapper">
-      <div className="popup-thing">
-        <div>
-          <h1>This is the NUI Popup!</h1>
-          <p>Exit with the escape key</p>
-          <button onClick={handleGetClientData}>Get Client Data</button>
-          {clientData && <ReturnClientDataComp data={clientData} />}
-        </div>
-      </div>
-    </div>
+    <Box
+      rWidth={1920}
+      rHeight={1080}
+      position='absolute'
+      display='flex'
+      rGap={50}
+      rPadding={50}
+      boxSizing='border-box'
+    >
+      <AnimatePresence>
+        {show && (
+          <MotionImage
+            src='./images/bg.png'
+            position='absolute'
+            top={0}
+            left={0}
+            zIndex={-1}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {show && (
+          <MotionUser
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {show && (
+          <MotionItems
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showConfirmModal && (
+          <MotionConfirmPaidDialog
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showDonateDialog && (
+          <MotionDonateDialog
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+        )}
+      </AnimatePresence>
+    </Box>
   );
-};
+}
 
 export default App;
