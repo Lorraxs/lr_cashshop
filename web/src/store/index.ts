@@ -6,7 +6,6 @@ import donate from "./donate";
 
 export const store = configureStore({
   reducer: { user, items, donate },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
