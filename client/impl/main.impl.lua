@@ -2,7 +2,7 @@ Main = {}
 
 function Main:Init()
   local o = {}
-  setmetatable(o, {__index = Main})
+  setmetatable(o, { __index = Main })
   o.isOpen = false
   o.PlayerData = ESX.GetPlayerData()
   o.histories = {}
@@ -18,7 +18,7 @@ end
 function Main:RegisterNuiHandlers()
   RegisterNUICallback("onClose", function(data, cb)
     cb("ok")
-    if data == 'App' then 
+    if data == 'App' then
       self:Close()
     end
   end)
@@ -42,6 +42,13 @@ function Main:RegisterNuiHandlers()
       table.insert(self.histories, item)
     end
     cb(self.histories)
+  end)
+  RegisterNUICallback("GetCode", function(data, cb)
+    local result = lib.callback.await('lr_cashshop:api:getCode', false, data.amount)
+    cb(result)
+  end)
+  RegisterNetEvent("lr_cashshop:client:donateStatus", function(status)
+    SendReactMessage('setDonateStatus', status)
   end)
 end
 

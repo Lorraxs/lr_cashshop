@@ -14,28 +14,43 @@ Citizen.CreateThreadNow(function()
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3
     ]])
   end
+  local success, result = pcall(MySQL.scalar.await, 'SELECT 1 from cashshop_donate_histories')
+  if not success then
+    print('Creating cashshop_donate_histories table...')
+    MySQL.query([[
+      CREATE TABLE IF NOT EXISTS `cashshop_donate_histories` (
+        `transactionID` varchar(50) DEFAULT NULL,
+        `amount` bigint(20) DEFAULT NULL,
+        `description` longtext DEFAULT NULL,
+        `transactionDate` char(50) DEFAULT NULL,
+        `identifier` varchar(50) DEFAULT NULL,
+        `status` char(50) DEFAULT NULL,
+        KEY `transactionID` (`transactionID`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3
+    ]])
+  end
 end)
 
 function isObjectEqual(a, b)
-  if a == b then 
+  if a == b then
     return true
   end
-  if a == nil and b == nil then 
+  if a == nil and b == nil then
     return true
   end
-  if a == nil or b == nil then 
+  if a == nil or b == nil then
     return false
   end
-  if type(a) ~= 'table' or type(b) ~= 'table' then 
+  if type(a) ~= 'table' or type(b) ~= 'table' then
     return false
   end
-  for k, v in pairs(a) do 
-    if b[k] ~= v then 
+  for k, v in pairs(a) do
+    if b[k] ~= v then
       return false
     end
   end
-  for k, v in pairs(b) do 
-    if a[k] ~= v then 
+  for k, v in pairs(b) do
+    if a[k] ~= v then
       return false
     end
   end
@@ -51,8 +66,8 @@ function getConfigItem(item)
 end
 
 function checkMoney(xPlayer, accountName, money)
-  if xPlayer.getAccount(accountName).money < money then 
-    return false,{
+  if xPlayer.getAccount(accountName).money < money then
+    return false, {
       status = 'error',
       message = 'Bạn không đủ tiền'
     }
@@ -61,9 +76,9 @@ function checkMoney(xPlayer, accountName, money)
 end
 
 function canCarryItem(xPlayer, itemData, count)
-  if itemData.category == 'item' or itemData.category == 'weapon' then 
+  if itemData.category == 'item' or itemData.category == 'weapon' then
     print(itemData.name, count)
-    if not xPlayer.canCarryItem(itemData.name, count) then 
+    if not xPlayer.canCarryItem(itemData.name, count) then
       return false, {
         status = 'error',
         message = 'Kho đồ của bạn đã đầy'
@@ -74,20 +89,20 @@ function canCarryItem(xPlayer, itemData, count)
 end
 
 function addItem(xPlayer, itemData, count)
-  if itemData.category == 'item' or itemData.category == 'clothes' or itemData.category == 'weapon' then 
+  if itemData.category == 'item' or itemData.category == 'clothes' or itemData.category == 'weapon' then
     print(json.encode(itemData))
     xPlayer.addInventoryItem(itemData.name, count, itemData.metadata)
     return true, {}
   end
-  if itemData.category == 'vehicle' then 
+  if itemData.category == 'vehicle' then
     local result = lib.callback.await('lr_vehicle:getVehicle', xPlayer.source, itemData.name)
-    if not result then 
+    if not result then
       return false, {
         status = 'error',
         message = 'Không thể tạo phương tiện'
       }
     end
-    if result.status == 'error' then 
+    if result.status == 'error' then
       return false, result.message
     end
     local plate = result.data.plate
@@ -99,7 +114,7 @@ function addItem(xPlayer, itemData, count)
     local id = MySQL.insert.await(query, {
       xPlayer.identifier,
       plate,
-      json.encode({model = joaat(itemData.name), plate = plate})
+      json.encode({ model = joaat(itemData.name), plate = plate })
     })
     print('created vehicle', id)
   end
@@ -131,21 +146,21 @@ lib.callback.register('lr_cashshop:buyItem', function(source, items)
   local standardItems = {}
   local sumCoin = 0
   local sumMoney = 0
-  for k, v in ipairs(items) do 
-    if not v.item then 
+  for k, v in ipairs(items) do
+    if not v.item then
       return {
         status = 'error',
         message = 'Dữ liệu không hợp lệ'
       }
     end
-    if not v.quantity or v.quantity < 1 then 
+    if not v.quantity or v.quantity < 1 then
       return {
         status = 'error',
         message = 'Số lượng không hợp lệ'
       }
     end
     local itemData = getConfigItem(v.item)
-    if not itemData then 
+    if not itemData then
       return {
         status = 'error',
         message = 'Vật phẩm không hợp lệ'
@@ -153,7 +168,7 @@ lib.callback.register('lr_cashshop:buyItem', function(source, items)
     end
     local paymentMethod = v.paymentMethod
     local price = itemData.price[paymentMethod]
-    if price == nil then 
+    if price == nil then
       return {
         status = 'error',
         message = 'Vật phẩm không hợp lệ'
@@ -161,15 +176,15 @@ lib.callback.register('lr_cashshop:buyItem', function(source, items)
     end
     local totalPrice = price * v.quantity
     local hasMoney, moneyError = checkMoney(xPlayer, paymentMethod, totalPrice)
-    if not hasMoney then 
+    if not hasMoney then
       return moneyError
     end
     local canCarry, carryError = canCarryItem(xPlayer, itemData, v.quantity)
-    if not canCarry then 
+    if not canCarry then
       return carryError
     end
     local addItem, addItemError = addItem(xPlayer, itemData, v.quantity)
-    if not addItem then 
+    if not addItem then
       return addItemError
     end
     xPlayer.removeAccountMoney(paymentMethod, totalPrice, ('%s - %s'):format(itemData.label, paymentMethod))
@@ -187,7 +202,6 @@ lib.callback.register('lr_cashshop:fetchHistories', function(source)
   local query = [[
     SELECT * FROM cashshop_histories WHERE identifier = ? ORDER BY date DESC LIMIT 50
   ]]
-  local histories = MySQL.query.await(query, {identifier})
+  local histories = MySQL.query.await(query, { identifier })
   return histories
-  
 end)

@@ -1,16 +1,16 @@
-import { Box, Image, Text, useMenu, useWindowSize } from 'lr-components';
-import React, { useCallback, useMemo } from 'react';
-import AppButton from './AppButton';
+import { Box, Image, Text, useMenu, useWindowSize } from "lr-components";
+import React, { useCallback, useMemo } from "react";
+import AppButton from "./AppButton";
 
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store';
-import ItemOptions from './ItemOptions';
-import { clearSelectedOptions } from '../store/items';
-import Item from './Item';
-import ItemInfo from './ItemInfo';
-import { CategoryOption, Item as ItemType } from '../types';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Grid, GridCellProps } from 'react-virtualized';
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store";
+import ItemOptions from "./ItemOptions";
+import { clearSelectedOptions } from "../store/items";
+import Item from "./Item";
+import ItemInfo from "./ItemInfo";
+import { CategoryOption, Item as ItemType } from "../types";
+import { motion, AnimatePresence } from "framer-motion";
+import { Grid, GridCellProps } from "react-virtualized";
 
 const MotionBox = motion(Box);
 
@@ -23,10 +23,10 @@ const Items = React.forwardRef<HTMLDivElement>((props, ref) => {
   const dispatch = useDispatch<AppDispatch>();
   const menu = useMenu([
     {
-      name: 'all',
-      label: 'Tất Cả',
+      name: "all",
+      label: "Tất Cả",
       args: {
-        icon: 'data:png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAABaCAYAAAA4qEECAAAACXBIWXMAAAsTAAALEwEAmpwYAAABlUlEQVR4nO3cy07DMBBGYYsFUnlxypaL2gfksgM2sD2o0G1RU43Hdny+B5jJ/IrixLJSiiRJkiRJ0sSAa+AOeOUM/9RZpJM6L8D2kEGp7dhotICi62xLbefeycGD0Vmdt1Jbo8EYpU6Y3gajszphehuMzuqEada4EYNOYtBJDDqJQScx6CSzLf6SJGk6Ua87wA3wBHxS3wfwCGxazVtaNQb25Nu3mre0aAxcAd/k+zr0zp73IhGNMeicoBs+OnZloVOFSm1RjYEN8HBcqGp7B+6nXAxHYdBJDDqJQScx6CQGnWT4xZ+4vY6L9zGmQPwHy+J9jNWjzif44n2M1cOgh3507BIvfxzE7XVcvI/RtVPTlpWi1bwG/cegg3HCehs3YtBJDDrJ8EHjuY60oPfk81xHEs91JJkr6APPdeQFvfFchyRJUnPNXuAbGf6DZRQGncSgkxh0EoOeNeilF8RK64TpbTA6qxOmt8HorE6Y4699uxmMNnWeS23+1vjXbdaPurfn3tn/1Flkuh91S5IkSZIklX79AGoWRvUeCODkAAAAAElFTkSuQmCC',
+        icon: "data:png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAABaCAYAAAA4qEECAAAACXBIWXMAAAsTAAALEwEAmpwYAAABlUlEQVR4nO3cy07DMBBGYYsFUnlxypaL2gfksgM2sD2o0G1RU43Hdny+B5jJ/IrixLJSiiRJkiRJ0sSAa+AOeOUM/9RZpJM6L8D2kEGp7dhotICi62xLbefeycGD0Vmdt1Jbo8EYpU6Y3gajszphehuMzuqEada4EYNOYtBJDDqJQScx6CSzLf6SJGk6Ua87wA3wBHxS3wfwCGxazVtaNQb25Nu3mre0aAxcAd/k+zr0zp73IhGNMeicoBs+OnZloVOFSm1RjYEN8HBcqGp7B+6nXAxHYdBJDDqJQScx6CQGnWT4xZ+4vY6L9zGmQPwHy+J9jNWjzif44n2M1cOgh3507BIvfxzE7XVcvI/RtVPTlpWi1bwG/cegg3HCehs3YtBJDDrJ8EHjuY60oPfk81xHEs91JJkr6APPdeQFvfFchyRJUnPNXuAbGf6DZRQGncSgkxh0EoOeNeilF8RK64TpbTA6qxOmt8HorE6Y4699uxmMNnWeS23+1vjXbdaPurfn3tn/1Flkuh91S5IkSZIklX79AGoWRvUeCODkAAAAAElFTkSuQmCC",
         options: [],
       },
     },
@@ -35,7 +35,7 @@ const Items = React.forwardRef<HTMLDivElement>((props, ref) => {
   const filteredItems = useMemo(() => {
     const categoryItems = store.items.filter((item) => {
       return (
-        item.category === menu.activeMenu.name || menu.activeMenu.name === 'all'
+        item.category === menu.activeMenu.name || menu.activeMenu.name === "all"
       );
     });
     if (store.selectedOptions.length === 0) {
@@ -46,7 +46,7 @@ const Items = React.forwardRef<HTMLDivElement>((props, ref) => {
         return store.selectedOptions.includes(option);
       }); */
       return store.selectedOptions.every((option) => {
-        if (option === 'coin' || option === 'money') {
+        if (option === "coin" || option === "money") {
           if (item.price[option]) {
             return true;
           }
@@ -76,8 +76,8 @@ const Items = React.forwardRef<HTMLDivElement>((props, ref) => {
   }, [filteredItems]);
   const options = useMemo(() => {
     const defaultOptions: CategoryOption[] = [
-      { name: 'coin', label: 'Coin' },
-      { name: 'money', label: 'Tiền Ingame' },
+      { name: "coin", label: "TCoin" },
+      { name: "money", label: "Tiền Ingame" },
     ];
     const options = menu.activeMenu.args?.options || [];
     return [...defaultOptions, ...options];
@@ -102,18 +102,18 @@ const Items = React.forwardRef<HTMLDivElement>((props, ref) => {
       rWidth={1320}
       rHeight={980}
       rPadding={10}
-      boxSizing='border-box'
+      boxSizing="border-box"
       rBorderRadius={10}
-      position='relative'
-      display='flex'
-      flexDirection='column'
+      position="relative"
+      display="flex"
+      flexDirection="column"
       rGap={10}
-      overflow='hidden'
+      overflow="hidden"
       ref={ref}
     >
       <Box
-        width={'100%'}
-        display='flex'
+        width={"100%"}
+        display="flex"
         rHeight={50}
         rGap={10}
         rBorderRadius={10}
@@ -131,20 +131,20 @@ const Items = React.forwardRef<HTMLDivElement>((props, ref) => {
                 menu.switchMenu(index);
               }}
             >
-              <Image src={item.args?.icon || ''} rWidth={30} rHeight={30} />
-              <Text fontFamily='Roboto'>{item.label}</Text>
+              <Image src={item.args?.icon || ""} rWidth={30} rHeight={30} />
+              <Text fontFamily="Roboto">{item.label}</Text>
             </AppButton>
           );
         })}
       </Box>
       <ItemOptions options={options} />
       <Box
-        width={'100%'}
+        width={"100%"}
         rHeight={830}
         rBorderRadius={10}
-        background={'rgba(135, 80, 253, 0.20)'}
-        backdropFilter='blur(5px)'
-        overflow='hidden'
+        background={"rgba(135, 80, 253, 0.20)"}
+        backdropFilter="blur(5px)"
+        overflow="hidden"
       >
         {/* <OverlayScrollbarsComponent
           style={{
@@ -203,16 +203,16 @@ const Items = React.forwardRef<HTMLDivElement>((props, ref) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            width={'100%'}
-            height={'100%'}
-            position='absolute'
+            width={"100%"}
+            height={"100%"}
+            position="absolute"
             left={0}
             top={0}
-            backgroundColor='rgba(23, 13, 44, 0.767)'
-            backdropFilter='blur(5px)'
-            display='flex'
-            justifyContent='center'
-            alignItems='center'
+            backgroundColor="rgba(23, 13, 44, 0.767)"
+            backdropFilter="blur(5px)"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
           >
             <ItemInfo item={selectedItem} />
           </MotionBox>

@@ -1,12 +1,12 @@
-import { Box, Image, Text } from 'lr-components';
-import React from 'react';
-import { Item as ItemType } from '../types';
-import styled from 'styled-components';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../store';
-import { setSelectedItem } from '../store/items';
-import { FaCoins } from 'react-icons/fa';
-import { CiMoneyBill } from 'react-icons/ci';
+import { Box, Image, Text } from "lr-components";
+import React from "react";
+import { Item as ItemType } from "../types";
+import styled from "styled-components";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store";
+import { setSelectedItem } from "../store/items";
+import { FaCoins } from "react-icons/fa";
+import { CiMoneyBill } from "react-icons/ci";
 
 interface Props {
   item: ItemType;
@@ -23,7 +23,7 @@ const Wrapper = styled(Box)`
   position: relative;
   overflow: hidden;
   &::before {
-    content: '';
+    content: "";
     transition: all 0.3s ease-in-out;
     position: absolute;
     width: 100%;
@@ -50,51 +50,51 @@ const Item = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
         rHeight={150}
         rBorderRadius={10}
         rPadding={10}
-        display='flex'
+        display="flex"
         rGap={5}
-        flexDirection='column'
-        justifyContent='center'
-        alignItems='center'
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
         ref={ref}
         onClick={() => {
           dispatch(setSelectedItem(item));
         }}
       >
-        <Box display='flex' width={'100%'} rGap={10}>
+        <Box display="flex" width={"100%"} rGap={10}>
           {item.price.coin && (
             <Box
               top={0}
-              boxSizing='border-box'
-              display='flex'
+              boxSizing="border-box"
+              display="flex"
               right={0}
               rBorderRadius={10}
               rGap={5}
-              alignItems='center'
+              alignItems="center"
             >
-              <Text fontFamily='Roboto' rFontSize={12}>
+              <Text fontFamily="Roboto" rFontSize={12}>
                 {item.price.coin.toLocaleString()}
               </Text>
-              <FaCoins color='#e2d200' />
+              <FaCoins color="#e2d200" />
             </Box>
           )}
           {item.price.money && (
             <Box
               top={0}
-              boxSizing='border-box'
-              display='flex'
+              boxSizing="border-box"
+              display="flex"
               left={0}
               rBorderRadius={10}
               rGap={5}
-              alignItems='center'
+              alignItems="center"
             >
-              <Text fontFamily='Roboto' rFontSize={12}>
+              <Text fontFamily="Roboto" rFontSize={12}>
                 {item.price.money.toLocaleString()}
               </Text>
               <CiMoneyBill />
             </Box>
           )}
         </Box>
-        <Image
+        {/* <Image
           src={item.image || `nui://ox_inventory/web/images/${item.name}.png`}
           width={'100%'}
           height={'100%'}
@@ -102,9 +102,14 @@ const Item = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
           rBorderRadius={10}
           overflow='hidden'
           zIndex={99}
+        /> */}
+        <img
+          src={item.image || `nui://ox_inventory/web/images/${item.name}.png`}
+          alt=""
+          className="w-2/3 h-2/3 rounded-3xl"
         />
-        <Box bottom={0} width={'100%'} boxSizing='border-box'>
-          <Text fontFamily='Roboto' rFontSize={12}>
+        <Box bottom={0} width={"100%"} boxSizing="border-box">
+          <Text fontFamily="Roboto" rFontSize={12}>
             {item.label}
           </Text>
         </Box>

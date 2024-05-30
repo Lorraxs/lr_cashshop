@@ -25,19 +25,20 @@ shared_scripts {
 }
 
 ui_page 'web/build/index.html'
+--[[ ui_page 'http://localhost:5174/' ]]
 
-client_scripts { 
+client_scripts {
   "config.lua",
   "editable-client.lua",
   "client/**/*"
 }
-server_script { 
+server_script {
   '@oxmysql/lib/MySQL.lua',
   "config.lua",
   "server/**/*"
 }
 
 files {
-	'web/build/index.html',
-	'web/build/**/*',
+  'web/build/index.html',
+  'web/build/**/*',
 }

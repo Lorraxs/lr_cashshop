@@ -1,30 +1,38 @@
-name: Tagged Release
+# This is a basic workflow to help you get started with the GitHub Auto-Release on Commit Action.
+
+name: AutoRelease
+
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  create-tagged-release:
-    name: Create Release
+  # This workflow contains a single job called "build"
+  release:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          fetch-depth: 0
-          ref: ${{ github.ref }}
-      - name: Get tag
-        run: echo ::set-output name=VERSION_TAG::${GITHUB_REF/refs\/tags\//}
-        id: get_tag
-      - name: 'Setup Node.js'
-        uses: 'actions/setup-node@v1'
+          node-version: "18.x"
+      - name: Install dependencies NUI
+        working-directory: ./web
+        run: yarn install --frozen-lockfile
+      - name: Build UI
+        working-directory: ./web
+        run: yarn build
+      - name: Zip Folder
+        run: zip -r ${{ github.event.repository.name }}.zip *.lua README.md LICENSE web/build/* locales/* client/* server/*
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          node-version: 14.x
-      - name: Create release
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          title: React/Lua Boilerplate - ${{ steps.get_tag.outputs.VERSION_TAG }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          title: "${{ github.event.head_commit.message }}"
+          automatic_release_tag: "latest"
           prerelease: false
-        id: auto_release
-          
+          files: |
+            *.zip
