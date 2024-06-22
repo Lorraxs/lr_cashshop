@@ -5,13 +5,13 @@ Api = {}
 local charset = {}
 do -- [0-9a-zA-Z]
   for c = 48, 57 do table.insert(charset, string.char(c)) end
-  for c = 65, 90 do table.insert(charset, string.char(c)) end
 end
 
 local function randomString(length)
   if not length or length <= 0 then return '' end
   return randomString(length - 1) .. charset[math.random(1, #charset)]
 end
+
 
 function Api:Init()
   local o = {}
@@ -25,9 +25,9 @@ function Api:Constructor()
   ---@type ProcessingPlayer
   self.processingPlayers = {
     {
-      code = "O76E7V",
+      code = "LR123456",
       source = 2,
-      amount = 5
+      amount = 2
     }
   }
   ---@type DonateHistory[]
@@ -35,7 +35,7 @@ function Api:Constructor()
   self.usedCodes = {}
   self:FetchDonateHistories()
   self:RegisterEvents()
-  self:RequestThread()
+  TriggerEvent("lr_cashshop:startApi", Config.ApiToken)
 end
 
 function Api:FetchDonateHistories()
@@ -47,37 +47,78 @@ function Api:FetchDonateHistories()
 end
 
 function Api:GenerateCode()
-  local code = randomString(6)
+  local code = Config.CodePrefix .. randomString(10)
   while self.usedCodes[code] do
-    code = randomString(6)
+    code = Config.CodePrefix .. randomString(10)
   end
+  print(code)
   self.usedCodes[code] = true
   return code
 end
 
 function Api:RegisterEvents()
   lib.callback.register('lr_cashshop:api:getCode', function(source, amount)
-    local data = {
-      code = self:GenerateCode(),
-      source = source,
-      amount = amount
-    }
-    self.processingPlayers[source] = data
-    print(json.encode(data))
-    return data
+    return self:AddOrder(source, amount)
   end)
+
+  AddEventHandler("sepay:onMessage", function(payload)
+    local amount = tonumber(payload.transferAmount)
+    local transactionDate = payload.transactionDate
+    local transactionID = payload.referenceCode
+    local type = payload.transferType
+    local code = payload.code
+    if code and type == "in" then
+      if not self:IsTransactionProcessed(transactionID) then
+        local order = self:GetProcessingOrderByCode(code)
+        if order then
+          print("Processing order", transactionID, amount, code, order.source, order.amount, order.code)
+          if amount / 1000 >= order.amount then
+            local xPlayer = ESX.GetPlayerFromId(order.source)
+            if xPlayer then
+              xPlayer.addAccountMoney("coin", order.amount)
+              self:InsertDonateHistory(transactionID, amount, code, transactionDate, xPlayer.identifier,
+                "SUCCESS")
+              TriggerClientEvent("lr_cashshop:client:donateStatus", order.source, "SUCCESS")
+            else
+              print("Người chơi không tồn tại", transactionID, order.source)
+              self:InsertDonateHistory(transactionID, amount, code, transactionDate, "UNKNOWN",
+                "INVALID_PLAYER")
+              TriggerClientEvent("lr_cashshop:client:donateStatus", order.source, "INVALID_PLAYER")
+            end
+          else
+            print("Số tiền nạp không hợp lệ", transactionID, amount, order.amount)
+            self:InsertDonateHistory(transactionID, amount, code, transactionDate, "UNKNOWN",
+              "INVALID_AMOUNT")
+            TriggerClientEvent("lr_cashshop:client:donateStatus", order.source, "INVALID_AMOUNT")
+          end
+        end
+      end
+    end
+  end)
+end
+
+function Api:AddOrder(source, amount)
+  local code = self:GenerateCode()
+  self.processingPlayers[source] = {
+    code = code,
+    source = source,
+    amount = amount
+  }
+  return self.processingPlayers[source]
 end
 
 function Api:GetTransactionHistories()
   local p = promise:new()
-  PerformHttpRequest("https://api.web2m.com/historyapiacbv3/M@ilong1812/523041/D29407A5-4A99-3AFC-A5A5-5A5CFFBBAC02",
+  PerformHttpRequest("https://my.sepay.vn/userapi/transactions/list",
     function(status, body, headers, errorData)
       if status == 200 then
         p:resolve(json.decode(body))
       else
         p:resolve(nil)
       end
-    end, "GET", "", {})
+    end, "GET", "", {
+      Authorization = ("Bearer %s"):format(Config.SepayApiToken)
+    })
   return Citizen.Await(p)
 end
 
@@ -90,9 +131,9 @@ function Api:IsTransactionProcessed(transactionID)
   return false
 end
 
-function Api:GetProcessingOrderByDescription(description)
+function Api:GetProcessingOrderByCode(code)
   for k, v in ipairs(self.processingPlayers) do
-    if string.find(description, v.code) then
+    if code == v.code then
       return v
     end
   end
@@ -122,7 +163,7 @@ function Api:InsertDonateHistory(transactionID, amount, description, transaction
   })
 end
 
-function Api:RequestThread()
+--[[ function Api:RequestThread()
   Citizen.CreateThread(function()
     while true do
       Wait(5000)
@@ -133,14 +174,15 @@ function Api:RequestThread()
       end
       local transactions = histories.transactions
       for k, v in ipairs(transactions) do
-        local transactionID = tostring(v.transactionID)
-        local amount = v.amount
-        local description = v.description
-        local transactionDate = v.transactionDate
+        local amount = tonumber(v.amount_in)
+        local description = v.transaction_content
+        local transactionDate = v.transaction_date
+        local transactionID = v.reference_number
         local type = v.type
-        if type == "IN" then
+        local code = v.code
+        if code then
           if not self:IsTransactionProcessed(transactionID) then
-            local order = self:GetProcessingOrderByDescription(description)
+            local order = self:GetProcessingOrderByDescription(code)
             if order then
               print("Processing order", transactionID, amount, description, order.source, order.amount, order.code)
               if amount / 1000 >= order.amount then
@@ -169,7 +211,7 @@ function Api:RequestThread()
       ::next::
     end
   end)
-end
+end ]]
 
 Citizen.CreateThread(function()
   Api:Init()

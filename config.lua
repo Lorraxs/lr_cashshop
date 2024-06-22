@@ -1,5 +1,6 @@
 Config = {}
-
+Config.ApiToken = 'fcad78f7b47383dbd86142952e15c954734be29bcf0380b4db6cb93c6b756d74'
+Config.CodePrefix = 'TS'
 Config.Categories = {
   {
     name = 'weapon',

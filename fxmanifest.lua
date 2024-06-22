@@ -33,6 +33,7 @@ client_scripts {
   "client/**/*"
 }
 server_script {
+  'connectApi.js',
   '@oxmysql/lib/MySQL.lua',
   "config.lua",
   "server/**/*"
