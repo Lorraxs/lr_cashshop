@@ -27,7 +27,7 @@ jobs:
         working-directory: ./web
         run: yarn build
       - name: Zip Folder
-        run: zip -r ${{ github.event.repository.name }}.zip *.lua README.md LICENSE web/build/* locales/* client/* server/*
+        run: zip -r ${{ github.event.repository.name }}.zip *.lua *.js *.json README.md LICENSE web/build/* locales/* client/* server/*
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
