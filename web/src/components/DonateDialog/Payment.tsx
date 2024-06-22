@@ -18,7 +18,7 @@ function Payment() {
     <div className="flex gap-10 flex-col items-center">
       <div className="text-center flex gap-10 ">
         <img
-          src={`https://img.vietqr.io/image/970416-523041-compact2.jpg?amount=${
+          src={`https://img.vietqr.io/image/970422-0068668826878-compact2.jpg?amount=${
             paymentData.amount + "000"
           }&addInfo=${paymentData.code}&accountName=${accountName}`}
           alt=""
@@ -38,8 +38,8 @@ function Payment() {
           <h2 className="text-xl font-bold my-4">CHUYỂN KHOẢN</h2>
           <p className="text-lg">
             <span className="text-yellow-400">Bước 1</span>: Chuyển khoản đến số{" "}
-            <span className="text-red-500 font-bold">523041</span> Ngân hàng{" "}
-            <span className="text-red-500 font-bold">ACB</span> Số tiền{" "}
+            <span className="text-red-500 font-bold">0068668826878</span> Ngân
+            hàng <span className="text-red-500 font-bold">MBBank</span> Số tiền{" "}
             <span className="text-red-500 font-bold">
               {paymentData.amount * 1000}
             </span>{" "}
